@@ -1,4 +1,4 @@
-package day02
+package day18
 
 import (
 	"testing"
@@ -6,7 +6,7 @@ import (
 	"github.com/ptuukkan/aoc-2024/utils"
 )
 
-var day = "day02"
+var day = "day18"
 var part1Expected = ""
 var part2Expected = ""
 
