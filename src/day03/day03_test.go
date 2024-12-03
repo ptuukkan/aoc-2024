@@ -7,8 +7,8 @@ import (
 )
 
 var day = "day03"
-var part1Expected = ""
-var part2Expected = ""
+var part1Expected = "161"
+var part2Expected = "48"
 
 func TestPart1(t *testing.T) {
 	input, err := utils.ReadFile("../../inputs/" + day + "_test")
@@ -24,7 +24,7 @@ func TestPart1(t *testing.T) {
 }
 
 func TestPart2(t *testing.T) {
-	input, err := utils.ReadFile("../../inputs/" + day + "_test")
+	input, err := utils.ReadFile("../../inputs/" + day + "_test_2")
 	if err != nil {
 		t.Fatal("Error getting input")
 	}
