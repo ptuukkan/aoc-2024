@@ -13,7 +13,7 @@ type Point struct {
 	Y int
 }
 
-func (p Point) Add(o Point) Point {
+func (p *Point) Add(o Point) Point {
 	return Point{
 		X: p.X + o.X,
 		Y: p.Y + o.Y,
@@ -46,87 +46,30 @@ var directions = []Point{
 	newPoint(0, -1),
 }
 
-var trail map[Point]map[int]bool
-var loopPositions = 0
-
 func charAtPoint(lines []string, p Point) string {
 	return string(lines[p.Y][p.X])
 }
 
-func walk(lines []string, guard Point, di int) {
-	_, ok := trail[guard]
+func walk(lines []string, guard Point, di int, trail map[Point]map[int]bool) bool {
+	tile, ok := trail[guard]
 	if !ok {
 		trail[guard] = make(map[int]bool)
+		trail[guard][di] = true
+	} else if tile[di] {
+		return true
 	}
 
 	nextPosition := guard.Add(directions[di])
 	if nextPosition.X < 0 || nextPosition.Y < 0 || nextPosition.X >= len(lines) || nextPosition.Y >= len(lines) {
-		return
+		return false
 	}
+
 	nextTile := charAtPoint(lines, nextPosition)
-
 	if nextTile == "#" {
-		nextDi := (di + 1) % 4
-		nextDirection := directions[nextDi]
-		nextPosition = guard.Add(nextDirection)
-		walk(lines, nextPosition, nextDi)
+		return walk(lines, guard, (di+1)%4, trail)
 	} else {
-		walk(lines, nextPosition, di)
+		return walk(lines, nextPosition, di, trail)
 	}
-}
-
-func populateLine(lines []string, guard Point, di int) {
-	if guard.X < 0 || guard.Y < 0 || guard.X >= len(lines) || guard.Y >= len(lines) {
-		return
-	}
-
-	if charAtPoint(lines, guard) == "#" {
-		return
-	}
-
-	elem, ok := trail[guard]
-	if ok {
-		elem[di] = true
-	} else {
-		trail[guard] = make(map[int]bool)
-		trail[guard][di] = true
-	}
-
-	oppositeDir := directions[(di+2)%4]
-	nextPosition := guard.Add(oppositeDir)
-
-	populateLine(lines, nextPosition, di)
-}
-
-func walkPart2(lines []string, guard Point, di int) {
-	elem, ok := trail[guard]
-	if ok {
-		elem[di] = true
-		if _, ok := elem[(di+1)%4]; ok {
-			loopPositions++
-		}
-	} else {
-		trail[guard] = make(map[int]bool)
-		trail[guard][di] = true
-	}
-
-	nextPosition := guard.Add(directions[di])
-	if nextPosition.X < 0 || nextPosition.Y < 0 || nextPosition.X >= len(lines) || nextPosition.Y >= len(lines) {
-		populateLine(lines, guard, di)
-		return
-	}
-	nextTile := charAtPoint(lines, nextPosition)
-
-	if nextTile == "#" {
-		populateLine(lines, guard, di)
-		nextDi := (di + 1) % 4
-		nextDirection := directions[nextDi]
-		nextPosition = guard.Add(nextDirection)
-		walkPart2(lines, nextPosition, nextDi)
-	} else {
-		walkPart2(lines, nextPosition, di)
-	}
-
 }
 
 func Part1(input string) string {
@@ -137,9 +80,9 @@ func Part1(input string) string {
 		return ""
 	}
 
-	trail = make(map[Point]map[int]bool)
+	trail := make(map[Point]map[int]bool)
 
-	walk(lines, guard, 0)
+	walk(lines, guard, 0, trail)
 
 	return strconv.Itoa(len(trail))
 }
@@ -152,9 +95,24 @@ func Part2(input string) string {
 		return ""
 	}
 
-	trail = make(map[Point]map[int]bool)
+	trail := make(map[Point]map[int]bool)
+	walk(lines, guard, 0, trail)
 
-	walkPart2(lines, guard, 0)
+	loopPositions := 0
+	for tile, _ := range trail {
+		if tile == guard {
+			continue
+		}
+		bytes := []byte(lines[tile.Y])
+		bytes[tile.X] = '#'
+		lines[tile.Y] = string(bytes)
+		if walk(lines, guard, 0, make(map[Point]map[int]bool)) {
+			loopPositions++
+		}
+		bytes = []byte(lines[tile.Y])
+		bytes[tile.X] = '.'
+		lines[tile.Y] = string(bytes)
+	}
 
 	return strconv.Itoa(loopPositions)
 }
