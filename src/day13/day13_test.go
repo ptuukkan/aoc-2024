@@ -7,7 +7,7 @@ import (
 )
 
 var day = "day13"
-var part1Expected = ""
+var part1Expected = "480"
 var part2Expected = ""
 
 func TestPart1(t *testing.T) {
