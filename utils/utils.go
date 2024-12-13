@@ -33,3 +33,64 @@ func Abs(number int) int {
 	}
 	return number
 }
+
+type Point struct {
+	Y int
+	X int
+}
+
+func (p Point) Add(o Point) Point {
+	return Point{
+		X: p.X + o.X,
+		Y: p.Y + o.Y,
+	}
+}
+
+func NewPoint(y, x int) Point {
+	return Point{
+		X: x,
+		Y: y,
+	}
+}
+
+var Directions = []Point{
+	NewPoint(-1, 0),
+	NewPoint(0, 1),
+	NewPoint(1, 0),
+	NewPoint(0, -1),
+}
+
+func (p *Point) OutOfBounds(length int) bool {
+	if p.X < 0 || p.Y < 0 || p.X >= length || p.Y >= length {
+		return true
+	}
+	return false
+}
+
+func (p Point) Up() Point {
+	return Point{
+		Y: p.Y + 1,
+		X: p.X,
+	}
+}
+
+func (p Point) Right() Point {
+	return Point{
+		Y: p.Y,
+		X: p.X + 1,
+	}
+}
+
+func (p Point) Down() Point {
+	return Point{
+		Y: p.Y - 1,
+		X: p.X,
+	}
+}
+
+func (p Point) Left() Point {
+	return Point{
+		Y: p.Y,
+		X: p.X - 1,
+	}
+}
