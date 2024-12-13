@@ -158,6 +158,22 @@ func groupPlots(plots map[utils.Point]*Plot, length int) [][][]int {
 	return groups
 }
 
+func discount(groups [][]int) int {
+	fences := 0
+
+	for _, group := range groups {
+		slices.Sort(group)
+		fences++
+		for i := 1; i < len(group); i++ {
+			if group[i]-group[i-1] > 1 {
+				fences++
+			}
+		}
+	}
+
+	return fences
+}
+
 func Part2(input string) string {
 	garden := utils.SplitNewLines(input)
 
@@ -182,28 +198,11 @@ func Part2(input string) string {
 		groups := groupPlots(region.Plots, len(garden))
 
 		for _, group := range groups {
-			asd := discount(group)
-			fences += asd
+			fences += discount(group)
 		}
 
 		fenceCost += area * fences
 
 	}
 	return strconv.Itoa(fenceCost)
-}
-
-func discount(groups [][]int) int {
-	fences := 0
-
-	for _, group := range groups {
-		slices.Sort(group)
-		fences++
-		for i := 1; i < len(group); i++ {
-			if group[i]-group[i-1] > 1 {
-				fences++
-			}
-		}
-	}
-
-	return fences
 }
