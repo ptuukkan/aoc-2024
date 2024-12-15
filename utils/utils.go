@@ -46,6 +46,11 @@ func (p Point) Add(o Point) Point {
 	}
 }
 
+func (p *Point) Move(v Point) {
+	p.Y += v.Y
+	p.X += v.X
+}
+
 func NewPoint(y, x int) Point {
 	return Point{
 		X: x,

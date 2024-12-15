@@ -7,8 +7,8 @@ import (
 )
 
 var day = "day15"
-var part1Expected = ""
-var part2Expected = ""
+var part1Expected = "10092"
+var part2Expected = "9021"
 
 func TestPart1(t *testing.T) {
 	input, err := utils.ReadFile("../../inputs/" + day + "_test")
