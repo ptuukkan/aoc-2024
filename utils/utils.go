@@ -46,6 +46,13 @@ func (p Point) Add(o Point) Point {
 	}
 }
 
+func (p *Point) Subtract(o *Point) Point {
+	return Point{
+		X: p.X - o.X,
+		Y: p.Y - o.Y,
+	}
+}
+
 func (p *Point) Move(v Point) {
 	p.Y += v.Y
 	p.X += v.X
