@@ -166,10 +166,11 @@ type Vertex struct {
 	Position  utils.Point
 	Direction utils.Point
 	Cost      int
+	Trail     []*utils.Point
 }
 
-func newVertex(p utils.Point, d utils.Point, cost int) Vertex {
-	return Vertex{Position: p, Direction: d, Cost: cost}
+func newVertex(p utils.Point, d utils.Point, cost int, trail []*utils.Point) Vertex {
+	return Vertex{Position: p, Direction: d, Cost: cost, Trail: trail}
 }
 
 func queueAdj(maze []string, vertex Vertex, queue *[]Vertex, visited *[]Vertex) {
@@ -183,13 +184,19 @@ func queueAdj(maze []string, vertex Vertex, queue *[]Vertex, visited *[]Vertex) 
 			cost += 1000
 		}
 
-		if slices.ContainsFunc(*visited, func(v Vertex) bool {
-			return v.Position == adj && v.Cost < cost
+		if slices.ContainsFunc(*queue, func(v Vertex) bool {
+			return v.Position == adj && v.Cost <= cost && v.Direction == dir
 		}) {
 			continue
 		}
 
-		*queue = append(*queue, newVertex(adj, dir, cost))
+		if slices.ContainsFunc(*visited, func(v Vertex) bool {
+			return v.Position == adj && v.Cost <= cost && v.Direction == dir
+		}) {
+			continue
+		}
+
+		*queue = append(*queue, newVertex(adj, dir, cost, append(vertex.Trail, &vertex.Position)))
 	}
 
 }
@@ -232,14 +239,11 @@ func Part2(input string) string {
 	vertex := Vertex{Position: start, Direction: utils.Directions[1], Cost: 0}
 
 	for {
+
 		visited = append(visited, vertex)
 		queueAdj(maze, vertex, &queue, &visited)
-		if len(queue) == 0 {
+		if len(queue) == 0 || vertex.Position == end {
 			break
-		}
-		if vertex.Position == end {
-
-			fmt.Printf("Finished %d\n", vertex.Cost)
 		}
 		slices.SortFunc(queue, func(a, b Vertex) int {
 			return a.Cost - b.Cost
@@ -249,5 +253,19 @@ func Part2(input string) string {
 		queue = queue[1:]
 	}
 
-	return strconv.Itoa(vertex.Cost)
+	bestTiles := make(map[utils.Point]bool)
+
+	for _, t := range vertex.Trail {
+		bestTiles[*t] = true
+	}
+
+	for _, v := range queue {
+		if v.Cost == vertex.Cost {
+			for _, t := range v.Trail {
+				bestTiles[*t] = true
+			}
+		}
+	}
+
+	return strconv.Itoa(len(bestTiles) + 1) // +1 for end tile
 }
