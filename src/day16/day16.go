@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"slices"
 	"strconv"
+	"time"
 
 	"github.com/ptuukkan/aoc-2024/utils"
 )
@@ -166,10 +167,10 @@ type Vertex struct {
 	Position  utils.Point
 	Direction utils.Point
 	Cost      int
-	Trail     []*utils.Point
+	Trail     []utils.Point
 }
 
-func newVertex(p utils.Point, d utils.Point, cost int, trail []*utils.Point) Vertex {
+func newVertex(p utils.Point, d utils.Point, cost int, trail []utils.Point) Vertex {
 	return Vertex{Position: p, Direction: d, Cost: cost, Trail: trail}
 }
 
@@ -184,11 +185,11 @@ func queueAdj(maze []string, vertex Vertex, queue *[]Vertex, visited *[]Vertex) 
 			cost += 1000
 		}
 
-		if slices.ContainsFunc(*queue, func(v Vertex) bool {
-			return v.Position == adj && v.Cost <= cost && v.Direction == dir
-		}) {
-			continue
-		}
+		// if slices.ContainsFunc(*queue, func(v Vertex) bool {
+		// 	return v.Position == adj && v.Cost < cost && v.Direction == dir
+		// }) {
+		// 	continue
+		// }
 
 		if slices.ContainsFunc(*visited, func(v Vertex) bool {
 			return v.Position == adj && v.Cost <= cost && v.Direction == dir
@@ -196,7 +197,11 @@ func queueAdj(maze []string, vertex Vertex, queue *[]Vertex, visited *[]Vertex) 
 			continue
 		}
 
-		*queue = append(*queue, newVertex(adj, dir, cost, append(vertex.Trail, &vertex.Position)))
+		trail := make([]utils.Point, len(vertex.Trail))
+		copy(trail, vertex.Trail)
+		trail = append(trail, vertex.Position)
+
+		*queue = append(*queue, newVertex(adj, dir, cost, trail))
 	}
 
 }
@@ -225,7 +230,25 @@ func Part1(input string) string {
 		queue = queue[1:]
 	}
 
+	print(maze, vertex.Trail)
+
 	return strconv.Itoa(vertex.Cost)
+}
+
+func print(maze []string, trail []utils.Point) {
+	for y, line := range maze {
+		for x, r := range line {
+			if slices.ContainsFunc(trail, func(a utils.Point) bool {
+				return a.Y == y && a.X == x
+			}) {
+				fmt.Printf("O")
+			} else {
+				fmt.Printf("%s", string(r))
+			}
+
+		}
+		fmt.Printf("\n")
+	}
 }
 
 func Part2(input string) string {
@@ -239,7 +262,10 @@ func Part2(input string) string {
 	vertex := Vertex{Position: start, Direction: utils.Directions[1], Cost: 0}
 
 	for {
-
+		fmt.Println("----------------------------")
+		for _, q := range queue {
+			fmt.Printf("%v - %v - %d - %v\n\n", q.Position, q.Direction, q.Cost, q.Trail)
+		}
 		visited = append(visited, vertex)
 		queueAdj(maze, vertex, &queue, &visited)
 		if len(queue) == 0 || vertex.Position == end {
@@ -251,21 +277,28 @@ func Part2(input string) string {
 
 		vertex = queue[0]
 		queue = queue[1:]
+		time.Sleep(10 * time.Millisecond)
 	}
 
 	bestTiles := make(map[utils.Point]bool)
 
 	for _, t := range vertex.Trail {
-		bestTiles[*t] = true
+		bestTiles[t] = true
 	}
+	print(maze, vertex.Trail)
+	bestTiles[vertex.Position] = true
 
 	for _, v := range queue {
 		if v.Cost == vertex.Cost {
+			fmt.Println("---------------------")
+			fmt.Println(v.Cost)
+			print(maze, v.Trail)
 			for _, t := range v.Trail {
-				bestTiles[*t] = true
+				bestTiles[t] = true
 			}
+			bestTiles[v.Position] = true
 		}
 	}
 
-	return strconv.Itoa(len(bestTiles) + 1) // +1 for end tile
+	return strconv.Itoa(len(bestTiles))
 }
