@@ -6,9 +6,9 @@ import (
 	"github.com/ptuukkan/aoc-2024/utils"
 )
 
-var day = "day02"
-var part1Expected = ""
-var part2Expected = ""
+var day = "day22"
+var part1Expected = "37327623"
+var part2Expected = "23"
 
 func TestPart1(t *testing.T) {
 	input, err := utils.ReadFile("../../inputs/" + day + "_test")
@@ -24,7 +24,7 @@ func TestPart1(t *testing.T) {
 }
 
 func TestPart2(t *testing.T) {
-	input, err := utils.ReadFile("../../inputs/" + day + "_test")
+    input, err := utils.ReadFile("../../inputs/" + day + "_test_part2")
 	if err != nil {
 		t.Fatal("Error getting input")
 	}
