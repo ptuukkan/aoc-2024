@@ -3,6 +3,7 @@ package day17
 import (
 	"fmt"
 	"math"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -97,9 +98,7 @@ func cdv(registers []int, operand int) {
 	registers[2] = divHelper(registers, numerator, operand)
 }
 
-func Part1(input string) string {
-	registers, instructions := parseInput(input)
-
+func runProgram(registers []int, instructions []int) string {
 	pointer := 0
 	var output []string
 
@@ -128,10 +127,45 @@ func Part1(input string) string {
 		pointer += 2
 	}
 
-	fmt.Println(registers)
 	return strings.Join(output, ",")
 }
 
+func Part1(input string) string {
+	registers, instructions := parseInput(input)
+
+	result := runProgram(registers, instructions)
+	return result
+}
+
+func findResult(instructions, reversed []int, result int) (bool, int) {
+	if len(reversed) == 0 {
+		return true, result
+	}
+	result <<= 3
+	goal := reversed[0]
+
+	for i := 0; i < 8; i++ {
+		registers := []int{result | i, 0, 0}
+		output := runProgram(registers, instructions)
+		if strings.HasPrefix(output, strconv.Itoa(goal)) {
+			if success, res := findResult(instructions, reversed[1:], result|i); success {
+				return success, res
+			}
+		}
+	}
+	return false, result
+}
+
 func Part2(input string) string {
-	return ""
+	_, instructions := parseInput(input)
+	reversed := make([]int, len(instructions))
+	copy(reversed, instructions)
+	slices.Reverse(reversed)
+
+	success, result := findResult(instructions, reversed, 0)
+	if success {
+		return fmt.Sprint(result)
+	}
+
+	return "error"
 }
