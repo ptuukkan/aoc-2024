@@ -89,52 +89,80 @@ func Part1(input string) string {
 	return fmt.Sprint(result)
 }
 
-var asd map[string]int
-
-func intersect(maps []map[string]bool) int {
+func intersect(maps []map[string]bool) string {
 	freq := make(map[string]int)
 
 	for _, m := range maps {
 		for key := range m {
 			freq[key]++
-			asd[key]++
+		}
+	}
+
+	count := make(map[int]int)
+
+	for _, value := range freq {
+		count[value]++
+	}
+
+	scores := make(map[int]int)
+
+	for key, value := range count {
+		scores[key] = key * value
+	}
+
+	cutOff := 0
+	cutOffScore := 0
+	for key, value := range scores {
+		if value > cutOffScore {
+			cutOffScore = value
+			cutOff = key
+		}
+	}
+
+	chosen := ""
+	for key, value := range freq {
+		if value >= cutOff {
+			chosen = key
+		}
+	}
+
+	filteredMaps := slices.DeleteFunc(maps, func(a map[string]bool) bool {
+		for key := range a {
+			if key == chosen {
+				return false
+			}
+		}
+		return true
+	})
+
+	newFreq := make(map[string]int)
+
+	for _, m := range filteredMaps {
+		for key := range m {
+			newFreq[key]++
+		}
+	}
+	result := make(map[string]bool)
+	for key, count := range newFreq {
+		if count == len(filteredMaps) {
+			result[key] = true
 		}
 	}
 
 	keys := []string{}
-	for key := range freq {
+	for key := range result {
 		keys = append(keys, key)
 	}
+	slices.Sort(keys)
 
-	slices.SortFunc(keys, func(a, b string) int {
-		return freq[b] - freq[a]
-	})
-
-	for _, s := range keys {
-		fmt.Printf("%s - %d\n", s, freq[s])
-	}
-
-	// results := make([]int, len(maps))
-	//
-	// for i := 0; i < len(maps); i++ {
-	// 	for _, count := range freq {
-	// 		results[count-1]++
-	// 	}
-	// }
-
-	// result := make(map[string]bool)
-	// for key, count := range freq {
-	// 	if count == len(maps) {
-	// 		result[key] = true
-	// 	}
-	// }
-
-	return 0
+	return strings.Join(keys, ",")
 }
 
 func Part2(input string) string {
 	nodes := parseInput(input)
-    asd = make(map[string]int)
+
+	groups := make(map[string]int)
+
 	for _, node := range nodes {
 		connections := getConnections(node)
 		nextConnections := make([]map[string]bool, len(connections))
@@ -147,28 +175,19 @@ func Part2(input string) string {
 			nextConnections[i][conn] = true
 		}
 
-		for _, n := range nextConnections {
-			fmt.Println(n)
+		group := intersect(nextConnections)
+		groups[group]++
+	}
+
+	result := ""
+	maxCount := 0
+	for key, value := range groups {
+		if value > maxCount {
+			result = key
+			maxCount = value
 		}
 
-		common := intersect(nextConnections)
-
-		fmt.Printf("Node: %s - len: %d\n", node.Name, common)
-
 	}
 
-	keys := []string{}
-	for key := range asd {
-		keys = append(keys, key)
-	}
-
-	slices.SortFunc(keys, func(a, b string) int {
-		return asd[b] - asd[a]
-	})
-
-	for _, s := range keys {
-		fmt.Printf("%s - %d\n", s, asd[s])
-	}
-
-	return ""
+	return result
 }
